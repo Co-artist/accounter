@@ -1,0 +1,242 @@
+[
+  {
+    "id": "test-1",
+    "type": "income",
+    "amount": 5000,
+    "category": "工资",
+    "date": "2025-12-01",
+    "note": "12月工资"
+  },
+  {
+    "id": "test-2",
+    "type": "expense",
+    "amount": 128,
+    "category": "餐饮",
+    "date": "2025-12-01",
+    "note": "午餐"
+  },
+  {
+    "id": "test-3",
+    "type": "expense",
+    "amount": 25.5,
+    "category": "交通",
+    "date": "2025-12-01",
+    "note": "地铁"
+  },
+  {
+    "id": "test-4",
+    "type": "expense",
+    "amount": 199,
+    "category": "购物",
+    "date": "2025-12-02",
+    "note": "生活用品"
+  },
+  {
+    "id": "test-5",
+    "type": "income",
+    "amount": 1000,
+    "category": "奖金",
+    "date": "2025-12-03",
+    "note": "月度奖金"
+  },
+  {
+    "id": "test-6",
+    "type": "expense",
+    "amount": 399,
+    "category": "娱乐",
+    "date": "2025-12-04",
+    "note": "电影票"
+  },
+  {
+    "id": "test-7",
+    "type": "expense",
+    "amount": 1500,
+    "category": "房租",
+    "date": "2025-12-05",
+    "note": "12月房租"
+  },
+  {
+    "id": "test-8",
+    "type": "expense",
+    "amount": 120,
+    "category": "水电费",
+    "date": "2025-12-06",
+    "note": "11月水电费"
+  },
+  {
+    "id": "test-9",
+    "type": "expense",
+    "amount": 88,
+    "category": "餐饮",
+    "date": "2025-12-06",
+    "note": "晚餐"
+  },
+  {
+    "id": "test-10",
+    "type": "income",
+    "amount": 500,
+    "category": "理财收益",
+    "date": "2025-12-07",
+    "note": "基金分红"
+  },
+  {
+    "id": "test-11",
+    "type": "expense",
+    "amount": 450,
+    "category": "购物",
+    "date": "2025-12-08",
+    "note": "衣服"
+  },
+  {
+    "id": "test-12",
+    "type": "expense",
+    "amount": 68,
+    "category": "餐饮",
+    "date": "2025-12-09",
+    "note": "早餐"
+  },
+  {
+    "id": "test-13",
+    "type": "expense",
+    "amount": 150,
+    "category": "交通",
+    "date": "2025-12-10",
+    "note": "打车"
+  },
+  {
+    "id": "test-14",
+    "type": "income",
+    "amount": 2000,
+    "category": "兼职收入",
+    "date": "2025-12-11",
+    "note": "兼职设计"
+  },
+  {
+    "id": "test-15",
+    "type": "expense",
+    "amount": 299,
+    "category": "数码配件",
+    "date": "2025-12-12",
+    "note": "手机壳"
+  },
+  {
+    "id": "test-16",
+    "type": "expense",
+    "amount": 180,
+    "category": "社交聚会",
+    "date": "2025-12-13",
+    "note": "朋友聚餐"
+  },
+  {
+    "id": "test-17",
+    "type": "expense",
+    "amount": 300,
+    "category": "教育",
+    "date": "2025-12-14",
+    "note": "在线课程"
+  },
+  {
+    "id": "test-18",
+    "type": "income",
+    "amount": 800,
+    "category": "礼金红包",
+    "date": "2025-12-15",
+    "note": "生日红包"
+  },
+  {
+    "id": "test-19",
+    "type": "expense",
+    "amount": 200,
+    "category": "医疗",
+    "date": "2025-12-16",
+    "note": "买药"
+  },
+  {
+    "id": "test-20",
+    "type": "expense",
+    "amount": 100,
+    "category": "运动健身",
+    "date": "2025-12-17",
+    "note": "健身房"
+  },
+  {
+    "id": "test-21",
+    "type": "income",
+    "amount": 1200,
+    "category": "投资",
+    "date": "2025-11-01",
+    "note": "股票收益"
+  },
+  {
+    "id": "test-22",
+    "type": "expense",
+    "amount": 1500,
+    "category": "房租",
+    "date": "2025-11-05",
+    "note": "11月房租"
+  },
+  {
+    "id": "test-23",
+    "type": "expense",
+    "amount": 450,
+    "category": "餐饮",
+    "date": "2025-11-10",
+    "note": "11月餐饮"
+  },
+  {
+    "id": "test-24",
+    "type": "income",
+    "amount": 5000,
+    "category": "工资",
+    "date": "2025-11-01",
+    "note": "11月工资"
+  },
+  {
+    "id": "test-25",
+    "type": "expense",
+    "amount": 300,
+    "category": "交通",
+    "date": "2025-11-15",
+    "note": "11月交通"
+  },
+  {
+    "id": "test-26",
+    "type": "expense",
+    "amount": 600,
+    "category": "购物",
+    "date": "2025-11-20",
+    "note": "11月购物"
+  },
+  {
+    "id": "test-27",
+    "type": "income",
+    "amount": 500,
+    "category": "奖金",
+    "date": "2025-10-01",
+    "note": "季度奖金"
+  },
+  {
+    "id": "test-28",
+    "type": "expense",
+    "amount": 1200,
+    "category": "房租",
+    "date": "2025-10-05",
+    "note": "10月房租"
+  },
+  {
+    "id": "test-29",
+    "type": "income",
+    "amount": 4800,
+    "category": "工资",
+    "date": "2025-10-01",
+    "note": "10月工资"
+  },
+  {
+    "id": "test-30",
+    "type": "expense",
+    "amount": 500,
+    "category": "餐饮",
+    "date": "2025-10-15",
+    "note": "10月餐饮"
+  }
+]

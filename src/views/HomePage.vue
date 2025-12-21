@@ -63,75 +63,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, inject, computed } from 'vue'
 import BalanceOverview from '../components/BalanceOverview.vue'
 import TransactionList from '../components/TransactionList.vue'
 import BottomNavigation from '../components/BottomNavigation.vue'
 import TransactionForm from '../components/TransactionForm.vue'
 
-// 从localStorage加载数据或使用默认数据
-const loadTransactions = () => {
-  const saved = localStorage.getItem('transactions')
-  if (saved) {
-    return JSON.parse(saved)
-  }
-  // 默认Mock数据，用于首次使用
-  return [
-    {
-      id: '1',
-      type: 'income',
-      amount: 5000,
-      category: '工资',
-      date: new Date().toISOString().split('T')[0],
-      note: '12月工资'
-    },
-    {
-      id: '2',
-      type: 'expense',
-      amount: 128,
-      category: '餐饮',
-      date: new Date().toISOString().split('T')[0],
-      note: '午餐'
-    },
-    {
-      id: '3',
-      type: 'expense',
-      amount: 25.5,
-      category: '交通',
-      date: new Date().toISOString().split('T')[0],
-      note: '地铁'
-    },
-    {
-      id: '4',
-      type: 'expense',
-      amount: 199,
-      category: '购物',
-      date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-      note: '生活用品'
-    },
-    {
-      id: '5',
-      type: 'income',
-      amount: 1000,
-      category: '奖金',
-      date: new Date(Date.now() - 172800000).toISOString().split('T')[0],
-      note: '月度奖金'
-    }
-  ]
-}
+// 注入store
+const store = inject('store')
 
-// 保存数据到localStorage
-const saveTransactions = (data) => {
-  localStorage.setItem('transactions', JSON.stringify(data))
-}
-
-// 交易数据
-const transactions = ref(loadTransactions())
-
-// 监听交易数据变化，自动保存到localStorage
-watch(transactions, (newValue) => {
-  saveTransactions(newValue)
-}, { deep: true })
+// 交易数据 - 从store获取
+const transactions = computed(() => store.state.transactions)
 
 // 表单状态
 const formVisible = ref(false)
@@ -172,16 +114,12 @@ const showSuccess = () => {
 const handleSubmit = (transactionData) => {
   if (editTransaction.value) {
     // 编辑现有交易
-    const index = transactions.value.findIndex(t => t.id === editTransaction.value.id)
-    if (index !== -1) {
-      transactions.value[index] = transactionData
-      showSuccess()
-    }
+    store.transactions.update(transactionData.id, transactionData)
   } else {
     // 添加新交易
-    transactions.value.push(transactionData)
-    showSuccess()
+    store.transactions.add(transactionData)
   }
+  showSuccess()
   closeForm()
 }
 
@@ -194,11 +132,8 @@ const handleEdit = (transaction) => {
 
 // 处理删除交易
 const handleDelete = (id) => {
-  const index = transactions.value.findIndex(t => t.id === id)
-  if (index !== -1) {
-    transactions.value.splice(index, 1)
-    showSuccess()
-  }
+  store.transactions.delete(id)
+  showSuccess()
 }
 
 // 显示收入/支出选择弹窗
@@ -334,9 +269,10 @@ const handleNavigate = (itemId) => {
   z-index: 10;
 }
 
-.modal-close:hover {
+.modal-close:active {
   background: rgba(0, 0, 0, 0.1);
   color: #333;
+  transform: scale(0.9);
 }
 
 .modal-title {
@@ -379,9 +315,9 @@ const handleNavigate = (itemId) => {
   color: white;
 }
 
-.option-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+.option-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .option-icon {

@@ -5,11 +5,11 @@
       <span class="balance-date">{{ currentDate }}</span>
     </div>
     
-    <div class="balance-amount">
+    <div class="balance-amount" v-memo="[totalBalance]">
       ¥{{ totalBalance.toFixed(2) }}
     </div>
     
-    <div class="balance-stats">
+    <div class="balance-stats" v-memo="[totalIncome, totalExpense]">
       <div class="stat-item income">
         <span class="stat-label">收入</span>
         <span class="stat-amount">+¥{{ totalIncome.toFixed(2) }}</span>

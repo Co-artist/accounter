@@ -11,7 +11,7 @@
       <div class="form-content">
         <!-- 金额输入 -->
         <div class="form-group">
-          <label class="form-label">金额</label>
+          <label class="form-label">{{ t('金额') }}</label>
           <div class="amount-input">
             <span class="currency-symbol">¥</span>
             <input 
@@ -25,7 +25,7 @@
             >
           </div>
           <div v-if="!isFormValid && form.amount <= 0" class="error-message">
-            请输入有效的金额
+            {{ t('请输入有效的金额') }}
           </div>
         </div>
         
@@ -43,7 +43,7 @@
         
         <!-- 分类选择 -->
         <div class="form-group">
-          <label class="form-label">分类</label>
+          <label class="form-label">{{ t('分类') }}</label>
           <div class="category-grid">
             <button 
               v-for="category in categories" 
@@ -60,7 +60,7 @@
         
         <!-- 日期选择 -->
         <div class="form-group">
-          <label class="form-label">日期</label>
+          <label class="form-label">{{ t('日期') }}</label>
           <input 
             type="date" 
             class="form-input" 
@@ -71,12 +71,12 @@
         
         <!-- 备注输入 -->
         <div class="form-group">
-          <label class="form-label">备注（可选）</label>
+          <label class="form-label">{{ t('备注') }}</label>
           <input 
             type="text" 
             class="form-input" 
             v-model="form.note" 
-            placeholder="添加备注"
+            :placeholder="t('请输入备注')"
             maxlength="50"
           >
           <span class="char-count">{{ form.note.length }}/50</span>
@@ -85,15 +85,18 @@
       
       <!-- 表单底部 -->
       <div class="form-footer">
-        <button class="form-btn cancel" @click="close">取消</button>
-        <button class="form-btn submit" @click="submit" :disabled="!isFormValid">确定</button>
+        <button class="form-btn cancel" @click="close">{{ t('取消') }}</button>
+        <button class="form-btn submit" @click="submit" :disabled="!isFormValid">{{ t('保存') }}</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, inject } from 'vue'
+
+// 注入翻译函数
+const t = inject('t')
 
 // Props
 const props = defineProps({
@@ -476,30 +479,34 @@ const close = () => {
 }
 
 .form-btn.cancel {
-  background: #f5f5f5;
-  color: #666;
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
-.form-btn.cancel:hover {
-  background: #e0e0e0;
+.form-btn.cancel:active {
+  background: var(--background-tertiary);
+  transform: scale(0.95);
 }
 
 .form-btn.submit {
-  background: #667eea;
-  color: white;
+  background: var(--primary-color);
+  color: var(--background-primary);
 }
 
 .form-btn.submit:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--primary-hover);
   transform: translateY(-1px);
 }
 
 .form-btn.submit:active:not(:disabled) {
-  transform: translateY(0);
+  background: var(--primary-active);
+  transform: scale(0.95);
 }
 
 .form-btn.submit:disabled {
-  background: #ccc;
+  background: var(--border-color);
+  color: var(--text-tertiary);
   cursor: not-allowed;
   opacity: 0.6;
 }

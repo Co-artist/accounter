@@ -1,16 +1,16 @@
 <template>
   <div class="transaction-list">
     <div class="list-header">
-      <h3 class="list-title">最近交易</h3>
-      <button class="list-more" v-if="transactions.length > displayedCount">
-        {{ showAll ? '收起' : '查看更多' }}
+      <h3 class="list-title">{{ t('最近交易') }}</h3>
+      <button class="list-more" v-if="transactions.length > displayedCount" @click="toggleShowAll">
+        {{ showAll ? t('收起') : t('查看更多') }}
       </button>
     </div>
     
     <div v-if="transactions.length === 0" class="empty-state">
       <div class="empty-icon">📋</div>
-      <p class="empty-text">还没有交易记录</p>
-      <p class="empty-hint">点击下方按钮开始记账吧</p>
+      <p class="empty-text">{{ t('还没有交易记录') }}</p>
+      <p class="empty-hint">{{ t('点击下方按钮开始记账吧') }}</p>
     </div>
     
     <div v-else class="transactions">
@@ -19,6 +19,7 @@
         :key="transaction.id"
         class="transaction-item"
         :class="transaction.type"
+        v-memo="[transaction.id, transaction.amount, transaction.date]"
       >
         <div class="transaction-left">
           <div class="transaction-category">
@@ -35,14 +36,14 @@
             <button 
               class="action-btn edit" 
               @click="$emit('edit', transaction)"
-              title="编辑"
+              :title="t('编辑')"
             >
               ✏️
             </button>
             <button 
               class="action-btn delete" 
               @click="openDeleteModal(transaction.id)"
-              title="删除"
+              :title="t('删除')"
             >
               🗑️
             </button>
@@ -59,18 +60,18 @@
         v-if="transactions.length > displayedCount"
         @click="toggleShowAll"
       >
-        {{ showAll ? '收起' : `查看全部 ${transactions.length} 条记录` }}
+        {{ showAll ? t('收起') : t('查看全部 {count} 条记录', { count: transactions.length }) }}
       </button>
     </div>
     
     <!-- 删除确认对话框 -->
     <div class="delete-modal" v-if="deleteModalVisible">
       <div class="delete-modal-content">
-        <h4>确认删除</h4>
-        <p>确定要删除这条交易记录吗？</p>
+        <h4>{{ t('确认删除') }}</h4>
+        <p>{{ t('确定要删除这条交易记录吗？') }}</p>
         <div class="delete-modal-actions">
-          <button class="modal-btn cancel" @click="cancelDelete">取消</button>
-          <button class="modal-btn confirm" @click="confirmDelete">确定删除</button>
+          <button class="modal-btn cancel" @click="cancelDelete">{{ t('取消') }}</button>
+          <button class="modal-btn confirm" @click="confirmDelete">{{ t('确定删除') }}</button>
         </div>
       </div>
     </div>
@@ -78,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 
 // Props
 const props = defineProps({
@@ -90,6 +91,9 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits(['edit', 'delete'])
+
+// 注入翻译函数
+const t = inject('t')
 
 // 显示控制
 const showAll = ref(false)
@@ -225,8 +229,9 @@ const getCategoryIcon = (category) => {
   transition: background-color 0.2s ease;
 }
 
-.list-more:hover {
+.list-more:active {
   background: rgba(102, 126, 234, 0.1);
+  transform: scale(0.95);
 }
 
 .empty-state {
@@ -277,9 +282,9 @@ const getCategoryIcon = (category) => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.transaction-item:hover {
+.transaction-item:active {
   background: #f0f0f0;
-  transform: translateX(2px);
+  transform: scale(0.98);
 }
 
 .transaction-item.income {
@@ -360,9 +365,9 @@ const getCategoryIcon = (category) => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.view-more-btn:hover {
+.view-more-btn:active {
   background: #e0e0e0;
-  transform: translateY(-1px);
+  transform: scale(0.98);
 }
 
 /* 交易操作按钮样式 */
@@ -370,34 +375,32 @@ const getCategoryIcon = (category) => {
   display: flex;
   gap: 8px;
   margin-right: 12px;
-  opacity: 0;
+  opacity: 1; /* 始终可见，适合移动端 */
   transition: opacity 0.2s ease;
-}
-
-.transaction-item:hover .transaction-actions {
-  opacity: 1;
 }
 
 .action-btn {
   background: none;
   border: none;
-  padding: 4px;
+  padding: 8px; /* 增大点击区域 */
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: all 0.2s ease;
   font-size: 16px;
+  min-width: 36px; /* 确保足够的点击区域 */
+  min-height: 36px;
 }
 
-.action-btn:hover {
+.action-btn:active {
   background: rgba(0, 0, 0, 0.1);
-  transform: scale(1.1);
+  transform: scale(0.9);
 }
 
-.action-btn.edit:hover {
+.action-btn.edit:active {
   background: rgba(255, 215, 0, 0.2);
 }
 
-.action-btn.delete:hover {
+.action-btn.delete:active {
   background: rgba(255, 0, 0, 0.1);
 }
 
@@ -462,8 +465,9 @@ const getCategoryIcon = (category) => {
   color: #666;
 }
 
-.modal-btn.cancel:hover {
+.modal-btn.cancel:active {
   background: #e0e0e0;
+  transform: scale(0.95);
 }
 
 .modal-btn.confirm {
@@ -471,8 +475,9 @@ const getCategoryIcon = (category) => {
   color: white;
 }
 
-.modal-btn.confirm:hover {
+.modal-btn.confirm:active {
   background: #d32f2f;
+  transform: scale(0.95);
 }
 
 /* 动画效果 */

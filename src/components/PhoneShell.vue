@@ -87,7 +87,7 @@
 .phone-screen {
   width: 100%;
   height: calc(100% - 88px);
-  background: #f5f5f5;
+  background: var(--background-primary);
   border-radius: 36px;
   overflow: hidden;
   position: relative;

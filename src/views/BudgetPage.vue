@@ -4,7 +4,10 @@
     <div class="content-wrapper">
       <!-- 顶部导航栏 -->
       <header class="budget-header">
-        <h1 class="header-title">{{ t('预算管理') }}</h1>
+        <h1 class="header-title">{{ t('预算设置') }}</h1>
+        <button class="back-btn" @click="handleBack">
+          <span class="back-icon">←</span>
+        </button>
       </header>
 
       <!-- 预算概览卡片 -->
@@ -196,16 +199,34 @@
         </div>
       </div>
     </div>
+    
+    <!-- 确认弹窗 -->
+    <ConfirmModal
+      v-model:visible="confirmModalVisible"
+      :title="confirmModalTitle"
+      :message="confirmModalMessage"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, inject, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BottomNavigation from '../components/BottomNavigation.vue'
+import ConfirmModal from '../components/ConfirmModal.vue'
 
 // 注入翻译函数和store
 const t = inject('t')
 const store = inject('store')
+
+const router = useRouter()
+
+// 返回上一页
+const handleBack = () => {
+  router.back()
+}
 
 // 从store获取预算数据
 const budgets = computed(() => store.state.budgets)
@@ -343,6 +364,35 @@ const showDetail = ref(false)
 const selectedBudget = ref(null)
 const budgetDetails = ref([])
 
+// 确认弹窗状态
+const confirmModalVisible = ref(false)
+const confirmModalTitle = ref('')
+const confirmModalMessage = ref('')
+const confirmAction = ref(null)
+
+// 显示确认弹窗
+const showConfirmModal = (title, message, action) => {
+  confirmModalTitle.value = title
+  confirmModalMessage.value = message
+  confirmAction.value = action
+  confirmModalVisible.value = true
+}
+
+// 确认操作
+const handleConfirm = () => {
+  if (confirmAction.value) {
+    confirmAction.value()
+  }
+  confirmModalVisible.value = false
+  confirmAction.value = null
+}
+
+// 取消操作
+const handleCancel = () => {
+  confirmModalVisible.value = false
+  confirmAction.value = null
+}
+
 // 查看预算详情
 const viewBudgetDetail = (budget) => {
   selectedBudget.value = budget
@@ -420,10 +470,14 @@ const editBudget = (budget) => {
 
 // 删除预算
 const deleteBudget = (id) => {
-  if (confirm(t('确定要删除这个预算吗？'))) {
-    store.budgets.delete(id)
-    updateBudgetUsage()
-  }
+  showConfirmModal(
+    t('确认删除'),
+    t('确定要删除这个预算吗？'),
+    () => {
+      store.budgets.delete(id)
+      updateBudgetUsage()
+    }
+  )
 }
 
 // 保存预算
@@ -470,24 +524,10 @@ const resetForm = () => {
 
 // 重置单个预算
 const resetBudget = (budget) => {
-  if (confirm(t('确定要重置该预算的使用情况吗？'))) {
-    // 创建新的预算对象，避免直接修改原始数据
-    const updatedBudget = {
-      ...budget,
-      used: 0,
-      usagePercentage: 0,
-      overspent: false
-    }
-    // 保存到store
-    store.budgets.update(budget.id, updatedBudget)
-    updateBudgetUsage()
-  }
-}
-
-// 重置所有预算
-const resetAllBudgets = () => {
-  if (confirm(t('确定要重置所有预算的使用情况吗？'))) {
-    budgets.value.forEach(budget => {
+  showConfirmModal(
+    t('提示'),
+    t('确定要重置该预算的使用情况吗？'),
+    () => {
       // 创建新的预算对象，避免直接修改原始数据
       const updatedBudget = {
         ...budget,
@@ -495,10 +535,32 @@ const resetAllBudgets = () => {
         usagePercentage: 0,
         overspent: false
       }
+      // 保存到store
       store.budgets.update(budget.id, updatedBudget)
-    })
-    updateBudgetUsage()
-  }
+      updateBudgetUsage()
+    }
+  )
+}
+
+// 重置所有预算
+const resetAllBudgets = () => {
+  showConfirmModal(
+    t('提示'),
+    t('确定要重置所有预算的使用情况吗？'),
+    () => {
+      budgets.value.forEach(budget => {
+        // 创建新的预算对象，避免直接修改原始数据
+        const updatedBudget = {
+          ...budget,
+          used: 0,
+          usagePercentage: 0,
+          overspent: false
+        }
+        store.budgets.update(budget.id, updatedBudget)
+      })
+      updateBudgetUsage()
+    }
+  )
 }
 
 // 获取分类图标
@@ -556,18 +618,41 @@ onMounted(() => {
 /* 顶部导航栏 */
 .budget-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 16px;
   background-color: var(--background-secondary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  position: relative;
 }
 
 .header-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+}
+
+.back-btn {
+  position: absolute;
+  left: 16px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn:hover {
+  background-color: var(--border-color);
 }
 
 /* 预算概览卡片 */

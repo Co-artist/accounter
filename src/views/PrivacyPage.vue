@@ -158,6 +158,15 @@
       </div>
     </div>
     
+    <!-- 确认弹窗 -->
+    <ConfirmModal
+      v-model:visible="confirmModalVisible"
+      :title="confirmModalTitle"
+      :message="confirmModalMessage"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
+
     <!-- 底部导航 -->
     <div class="bottom-nav-wrapper">
       <BottomNavigation 
@@ -172,6 +181,7 @@
 import { ref, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import BottomNavigation from '../components/BottomNavigation.vue'
+import ConfirmModal from '../components/ConfirmModal.vue'
 
 // 获取路由实例
 const router = useRouter()
@@ -187,6 +197,35 @@ const privacySettings = ref({
   biometricAuth: false,
   personalizedAds: true
 })
+
+// 确认弹窗状态
+const confirmModalVisible = ref(false)
+const confirmModalTitle = ref('')
+const confirmModalMessage = ref('')
+const confirmAction = ref(null)
+
+// 显示确认弹窗
+const showConfirmModal = (title, message, action) => {
+  confirmModalTitle.value = title
+  confirmModalMessage.value = message
+  confirmAction.value = action
+  confirmModalVisible.value = true
+}
+
+// 确认操作
+const handleConfirm = () => {
+  if (confirmAction.value) {
+    confirmAction.value()
+  }
+  confirmModalVisible.value = false
+  confirmAction.value = null
+}
+
+// 取消操作
+const handleCancel = () => {
+  confirmModalVisible.value = false
+  confirmAction.value = null
+}
 
 // 导出格式选择弹窗状态
 const showExportFormat = ref(false)
@@ -332,27 +371,31 @@ const handleBackup = () => {
 
 // 清除数据
 const handleClearData = () => {
-  if (confirm(t('确定要清除所有数据吗？此操作不可恢复。'))) {
-    try {
-      // 清除所有相关数据
-      localStorage.removeItem('transactions')
-      localStorage.removeItem('categories')
-      localStorage.removeItem('budgets')
-      localStorage.removeItem('settings')
-      
-      // 清除所有备份
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('backup_')) {
-          localStorage.removeItem(key)
-        }
-      })
-      
-      alert(t('数据已清除'))
-    } catch (error) {
-      console.error('清除数据失败:', error)
-      alert(t('清除数据失败'))
+  showConfirmModal(
+    t('提示'),
+    t('确定要清除所有数据吗？此操作不可恢复。'),
+    () => {
+      try {
+        // 清除所有相关数据
+        localStorage.removeItem('transactions')
+        localStorage.removeItem('categories')
+        localStorage.removeItem('budgets')
+        localStorage.removeItem('settings')
+        
+        // 清除所有备份
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('backup_')) {
+            localStorage.removeItem(key)
+          }
+        })
+        
+        alert(t('数据已清除'))
+      } catch (error) {
+        console.error('清除数据失败:', error)
+        alert(t('清除数据失败'))
+      }
     }
-  }
+  )
 }
 
 // 切换隐私设置

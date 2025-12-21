@@ -250,14 +250,30 @@ if (index !== -1) {
 - 确保所有依赖版本兼容
 - 检查是否有未定义的变量或函数
 
-### 6.4 数据丢失问题
-**问题**：刷新页面后交易记录丢失
+### 6.5 Android Studio 集成相关
+**问题**：热更新不生效
 **解决方案**：
-- 检查localStorage是否被禁用
-- 检查浏览器隐私设置
-- 确保代码中正确调用了保存数据的方法
+- 确认 `capacitor.config.ts` 中的 `server.url` 已取消注释并指向正确的 IP（模拟器为 `10.0.2.2`）
+- 确认 `npm run dev` 正在运行
 
-## 7. 项目进度与待办事项
+**问题**：无法访问后端接口
+**解决方案**：
+- 模拟器：确保 `.env.development` 中 API 地址为 `http://10.0.2.2:5001/api`
+- 真机：确保 API 地址为电脑局域网 IP，且后端已允许 CORS
+
+## 7. Android 开发与打包
+### 7.1 开发模式（支持热更新）
+1. 修改 `capacitor.config.ts`，取消 `server` 配置段的注释。
+2. 运行 `npm run dev` 启动前端。
+3. 运行 `npm run cap:dev` 打开 Android Studio 并运行模拟器。
+4. 修改前端代码，App 将实时刷新。
+
+### 7.2 生产打包
+1. 修改 `capacitor.config.ts`，注释掉 `server` 配置段。
+2. 运行 `npm run cap:build`。
+3. 在 Android Studio 中选择 `Build > Generate Signed Bundle / APK` 生成发布包。
+
+## 8. 项目进度与待办事项
 
 ### 7.1 当前项目进度
 - ✅ 项目初始化与基本框架搭建

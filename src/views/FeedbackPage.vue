@@ -1,11 +1,12 @@
 <template>
   <div class="feedback-container">
-    <div class="feedback-header">
-      <h2>反馈建议</h2>
-      <button class="back-button" @click="$router.back()">
-        <i class="icon-arrow-left"></i>
+    <!-- 顶部导航栏 -->
+    <header class="feedback-header">
+      <h1 class="header-title">{{ t('意见反馈') }}</h1>
+      <button class="back-btn" @click="handleBack">
+        <span class="back-icon">←</span>
       </button>
-    </div>
+    </header>
     
     <div class="feedback-form-wrapper">
       <form class="feedback-form" @submit.prevent="submitFeedback">
@@ -55,8 +56,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from '../utils/axios';
+
+const router = useRouter();
+
+// 注入翻译函数
+const t = inject('t');
+
+// 返回上一页
+const handleBack = () => {
+  router.back();
+};
 
 const feedback = ref({
   type: '',
@@ -109,24 +121,42 @@ const submitFeedback = async () => {
 
 .feedback-header {
   display: flex;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 16px;
+  background-color: var(--background-secondary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   position: relative;
+  flex-shrink: 0;
 }
 
-.feedback-header h2 {
+.header-title {
   font-size: 20px;
-  margin: 0 auto;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
 }
 
-.back-button {
+.back-btn {
   position: absolute;
-  left: 0;
+  left: 16px;
   background: none;
   border: none;
   font-size: 20px;
+  color: var(--text-primary);
   cursor: pointer;
-  padding: 5px;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn:hover {
+  background-color: var(--border-color);
 }
 
 .feedback-form-wrapper {

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="faceGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFC107;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Body/Head Shape -->
+  <circle cx="100" cy="100" r="90" fill="url(#faceGrad)" stroke="#333" stroke-width="4"/>
+  
+  <!-- Ears -->
+  <path d="M30 40 Q 20 20 50 35" fill="#FFA000" stroke="#333" stroke-width="3"/>
+  <path d="M170 40 Q 180 20 150 35" fill="#FFA000" stroke="#333" stroke-width="3"/>
+
+  <!-- Eyes Background -->
+  <circle cx="65" cy="90" r="30" fill="#FFF" stroke="#333" stroke-width="3"/>
+  <circle cx="135" cy="90" r="30" fill="#FFF" stroke="#333" stroke-width="3"/>
+  
+  <!-- Pupils -->
+  <circle cx="65" cy="90" r="12" fill="#333"/>
+  <circle cx="135" cy="90" r="12" fill="#333"/>
+  <circle cx="68" cy="87" r="4" fill="#FFF"/> <!-- Sparkle -->
+  <circle cx="138" cy="87" r="4" fill="#FFF"/> <!-- Sparkle -->
+  
+  <!-- Beak -->
+  <path d="M90 120 L110 120 L100 140 Z" fill="#FF5722" stroke="#333" stroke-width="2"/>
+  
+  <!-- Wings/Hands holding a coin -->
+  <path d="M30 130 Q 10 150 40 160" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
+  <path d="M170 130 Q 190 150 160 160" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Coin icon on forehead/belly -->
+  <circle cx="100" cy="165" r="15" fill="#FFD700" stroke="#333" stroke-width="2"/>
+  <text x="100" y="172" font-family="Arial" font-size="14" font-weight="bold" fill="#333" text-anchor="middle">¥</text>
+</svg>

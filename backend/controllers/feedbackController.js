@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js'
+import Feedback from '../database/models/Feedback.js'
 import { saveFeedbackToFile, getAllFeedbackFromFile, getFeedbackByUserIdFromFile } from '../utils/feedbackStorage.js'
 
 // 创建反馈
@@ -13,14 +13,15 @@ const createFeedback = async (req, res) => {
     }
     
     // 创建反馈对象
-    const { data: feedback, error } = await supabase.from('feedback').insert([{ user_id: userId, type, content, contact }]).select().single()
-    if (error) {
-      res.status(500).json({ message: '创建反馈失败', error: error.message })
-      return
-    }
+    const feedback = await Feedback.create({ 
+      userId, 
+      type, 
+      content, 
+      contact 
+    });
     
     // 同时保存到文件（双重备份）
-    saveFeedbackToFile({ userId, type, content, contact, createdAt: feedback.created_at })
+    saveFeedbackToFile({ userId, type, content, contact, createdAt: feedback.createdAt })
     
     res.status(201).json({ message: '反馈提交成功', feedback })
   } catch (error) {
@@ -31,11 +32,7 @@ const createFeedback = async (req, res) => {
 // 获取所有反馈（管理员使用）
 const getAllFeedback = async (req, res) => {
   try {
-    const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending: false })
-    if (error) {
-      res.status(500).json({ message: '获取反馈列表失败', error: error.message })
-      return
-    }
+    const data = await Feedback.find().sort({ createdAt: -1 });
     res.status(200).json(data)
   } catch (error) {
     res.status(500).json({ message: '获取反馈列表失败', error: error.message })
@@ -46,11 +43,7 @@ const getAllFeedback = async (req, res) => {
 const getUserFeedback = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { data, error } = await supabase.from('feedback').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    if (error) {
-      res.status(500).json({ message: '获取用户反馈失败', error: error.message })
-      return
-    }
+    const data = await Feedback.find({ userId }).sort({ createdAt: -1 });
     res.status(200).json(data)
   } catch (error) {
     res.status(500).json({ message: '获取用户反馈失败', error: error.message })

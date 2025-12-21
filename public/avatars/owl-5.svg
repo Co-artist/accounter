@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="45" fill="#E6E6FA" stroke="#333" stroke-width="2"/>
+  <circle cx="35" cy="40" r="12" fill="white" stroke="#333" stroke-width="2"/>
+  <circle cx="65" cy="40" r="12" fill="white" stroke="#333" stroke-width="2"/>
+  <circle cx="35" cy="40" r="5" fill="#333"/>
+  <circle cx="65" cy="40" r="5" fill="#333"/>
+  <!-- Headphones -->
+  <path d="M20 50 C 20 20 80 20 80 50" fill="none" stroke="#333" stroke-width="4"/>
+  <rect x="10" y="40" width="15" height="25" rx="5" fill="#4169E1"/>
+  <rect x="75" y="40" width="15" height="25" rx="5" fill="#4169E1"/>
+  <path d="M47 60 L53 60 L50 65 Z" fill="#FFA500"/>
+</svg>

@@ -1,5 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+// 静态导入登录和注册页面，避免切换时的白屏加载
+import LoginPage from '../views/LoginPage.vue'
+import RegisterPage from '../views/RegisterPage.vue'
+
 // 路由懒加载
 const HomePage = () => import('../views/HomePage.vue')
 const StatisticsPage = () => import('../views/StatisticsPage.vue')
@@ -9,8 +13,6 @@ const BudgetPage = () => import('../views/BudgetPage.vue')
 const PrivacyPage = () => import('../views/PrivacyPage.vue')
 const UserAgreement = () => import('../views/UserAgreement.vue')
 const PrivacyPolicy = () => import('../views/PrivacyPolicy.vue')
-const LoginPage = () => import('../views/LoginPage.vue')
-const RegisterPage = () => import('../views/RegisterPage.vue')
 const FeedbackPage = () => import('../views/FeedbackPage.vue')
 
 const routes = [

@@ -106,7 +106,15 @@ const currentDeleteId = ref(null)
 // 按日期排序的交易列表
 const sortedTransactions = computed(() => {
   return [...props.transactions].sort((a, b) => {
-    return new Date(b.date) - new Date(a.date)
+    // 首先按日期降序排序
+    const dateA = new Date(a.date).getTime()
+    const dateB = new Date(b.date).getTime()
+    if (dateA !== dateB) {
+      return dateB - dateA
+    }
+    // 日期相同时，按ID（创建时间戳）降序排序
+    // 将ID转换为数字进行比较（处理默认ID为"1"的情况和时间戳ID）
+    return Number(b.id) - Number(a.id)
   })
 })
 

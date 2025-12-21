@@ -8,49 +8,8 @@ const initializeData = () => {
     return saved ? JSON.parse(saved) : defaultValue
   }
 
-  // 默认交易数据
-  const defaultTransactions = [
-    {
-      id: '1',
-      type: 'income',
-      amount: 5000,
-      category: '工资',
-      date: new Date().toISOString().split('T')[0],
-      note: '12月工资'
-    },
-    {
-      id: '2',
-      type: 'expense',
-      amount: 128,
-      category: '餐饮',
-      date: new Date().toISOString().split('T')[0],
-      note: '午餐'
-    },
-    {
-      id: '3',
-      type: 'expense',
-      amount: 25.5,
-      category: '交通',
-      date: new Date().toISOString().split('T')[0],
-      note: '地铁'
-    },
-    {
-      id: '4',
-      type: 'expense',
-      amount: 199,
-      category: '购物',
-      date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-      note: '生活用品'
-    },
-    {
-      id: '5',
-      type: 'income',
-      amount: 1000,
-      category: '奖金',
-      date: new Date(Date.now() - 172800000).toISOString().split('T')[0],
-      note: '月度奖金'
-    }
-  ]
+  // 默认交易数据（新用户为空）
+  const defaultTransactions = []
 
   // 默认分类数据
   const defaultCategories = [

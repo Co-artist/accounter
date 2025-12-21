@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 创建axios实例
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5001/api', // 后端API基础URL
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://172.24.35.163:5001/api', // 后端API基础URL (局域网IP)
   timeout: 10000, // 请求超时时间
   headers: {
     'Content-Type': 'application/json'

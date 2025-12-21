@@ -1,7 +1,7 @@
 {
   "name": "acconuter",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,15 +9,20 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "cap:dev": "npx cap open android",
+    "cap:build": "npm run build && npx cap copy android",
+    "cap:live": "npx cap run android -l --external"
   },
   "dependencies": {
+    "@capgo/capacitor-updater": "^8.2.3",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "echarts": "^6.0.0",
     "express": "^5.2.1",
+    "gsap": "^3.14.2",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.1",
@@ -26,7 +31,12 @@
     "winston": "^3.18.3"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
     "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "^5.9.3",
     "vite": "^6.0.5"
   }
 }

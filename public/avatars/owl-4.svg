@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="45" fill="#FFFACD" stroke="#333" stroke-width="2"/>
+  <path d="M20 20 L40 40 L20 40 Z" fill="#8B4513"/> <!-- Ear -->
+  <path d="M80 20 L60 40 L80 40 Z" fill="#8B4513"/> <!-- Ear -->
+  <circle cx="35" cy="45" r="12" fill="white" stroke="#333" stroke-width="2"/>
+  <circle cx="65" cy="45" r="12" fill="white" stroke="#333" stroke-width="2"/>
+  <rect x="30" y="43" width="10" height="4" fill="#333"/> <!-- Sleepy eyes -->
+  <rect x="60" y="43" width="10" height="4" fill="#333"/>
+  <path d="M47 60 L53 60 L50 65 Z" fill="#FFA500"/>
+</svg>

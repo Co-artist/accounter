@@ -9,6 +9,33 @@
       
       <!-- 表单内容 -->
       <div class="form-content">
+        <!-- 自然语言输入 -->
+        <div class="form-group">
+          <label class="form-label">{{ t('一句话自动创建账单') }}</label>
+          <input
+            type="text"
+            class="form-input"
+            v-model="utterance"
+            :placeholder="t('例如：我今天发工资5000元 / 昨天打车花了48元')"
+            maxlength="100"
+          >
+          <div class="nlp-actions">
+            <button class="nlp-btn parse" @click="parseUtterance">{{ t('解析') }}</button>
+            <button class="nlp-btn apply" :disabled="!parsed" @click="applyParsed">{{ t('应用到表单') }}</button>
+            <button class="nlp-btn clear" @click="clearParsed">{{ t('清空') }}</button>
+          </div>
+          <div v-if="parseError" class="stt-error">{{ parseError }}</div>
+          <div v-if="parsed" class="nlp-preview">
+            <div class="preview-row"><span class="preview-label">{{ t('类型') }}</span><span class="preview-value">{{ parsed.type ? (parsed.type === 'income' ? t('收入') : t('支出')) : t('未识别') }}</span></div>
+            <div class="preview-row"><span class="preview-label">{{ t('金额') }}</span><span class="preview-value">{{ parsed.amount ?? t('未识别') }}</span></div>
+            <div class="preview-row"><span class="preview-label">{{ t('分类') }}</span><span class="preview-value">{{ parsed.category ? t(parsed.category) : '' }}</span></div>
+            <div class="preview-row"><span class="preview-label">{{ t('日期') }}</span><span class="preview-value">{{ parsed.date }}</span></div>
+            <div class="preview-row"><span class="preview-label">{{ t('备注') }}</span><span class="preview-value">{{ parsed.note }}</span></div>
+            <div v-if="parsed.warnings && parsed.warnings.length" class="preview-warnings">
+              {{ t('提示') }}：{{ parsed.warnings.join('；') }}
+            </div>
+          </div>
+        </div>
         <!-- 金额输入 -->
         <div class="form-group">
           <label class="form-label">{{ t('金额') }}</label>
@@ -53,7 +80,7 @@
               @click="form.category = category"
             >
               <span class="category-icon">{{ getCategoryIcon(category) }}</span>
-              <span class="category-name">{{ category }}</span>
+              <span class="category-name">{{ t(category) }}</span>
             </button>
           </div>
         </div>
@@ -94,6 +121,7 @@
 
 <script setup>
 import { ref, computed, watch, inject } from 'vue'
+import { parseText } from '../utils/textNlp'
 
 // 注入翻译函数
 const t = inject('t')
@@ -126,6 +154,14 @@ const form = ref({
   note: ''
 })
 
+// 自然语言输入与解析结果
+const utterance = ref('')
+const parsed = ref(null)
+const parseError = ref('')
+
+// 本地类型（支持一键切换）
+const internalFormType = ref(props.formType)
+
 // 最大日期（今天）
 const maxDate = ref(new Date().toISOString().split('T')[0])
 
@@ -134,22 +170,22 @@ const quickAmounts = [10, 20, 50, 100, 200, 500]
 
 // 分类选项
 const categories = computed(() => {
-  return props.formType === 'income' 
+  return internalFormType.value === 'income' 
     ? ['工资', '奖金', '投资', '兼职收入', '理财收益', '礼金红包', '退款收入', '其他副业', '其他收入']
     : ['餐饮', '交通', '购物', '娱乐', '房租', '水电费', '医疗', '教育', '服饰美容', '旅游出行', '社交聚会', '数码配件', '家居用品', '宠物支出', '运动健身', '学习培训', '其他支出']
 })
 
 // 表单标题
 const formTitle = computed(() => {
-  if (props.editTransaction) {
-    return props.formType === 'income' ? '编辑收入' : '编辑支出'
-  }
-  return props.formType === 'income' ? '添加收入' : '添加支出'
+  const action = props.editTransaction ? t('编辑') : t('添加')
+  const type = internalFormType.value === 'income' ? t('收入') : t('支出')
+  return `${action} ${type}`
 })
 
 // 监听formType变化，重置分类
 watch(() => props.formType, (newType) => {
   if (!props.editTransaction) {
+    internalFormType.value = newType
     form.value.category = newType === 'income' ? '工资' : '餐饮'
   }
 }, { immediate: true })
@@ -181,14 +217,54 @@ watch(() => props.editTransaction, (newTransaction) => {
       date: newTransaction.date,
       note: newTransaction.note || ''
     }
+    internalFormType.value = props.formType
   }
 })
+
+// 解析自然语言
+const parseUtterance = () => {
+  parseError.value = ''
+  try {
+    const result = parseText(utterance.value || '')
+    parsed.value = result
+  } catch (e) {
+    parsed.value = null
+    parseError.value = '解析失败，请检查输入'
+  }
+}
+
+// 应用解析到表单
+const applyParsed = () => {
+  if (!parsed.value) return
+  const r = parsed.value
+  if (r.type && (r.type === 'income' || r.type === 'expense')) {
+    internalFormType.value = r.type
+  }
+  if (r.amount !== null && r.amount >= 0) {
+    form.value.amount = r.amount
+  }
+  if (r.category) {
+    form.value.category = r.category
+  }
+  if (r.date) {
+    form.value.date = r.date
+  }
+  if (r.note) {
+    form.value.note = r.note
+  }
+}
+
+const clearParsed = () => {
+  utterance.value = ''
+  parsed.value = null
+  parseError.value = ''
+}
 
 // 重置表单
 const resetForm = () => {
   form.value = {
     amount: 0,
-    category: props.formType === 'income' ? '工资' : '餐饮',
+    category: internalFormType.value === 'income' ? '工资' : '餐饮',
     date: new Date().toISOString().split('T')[0],
     note: ''
   }
@@ -240,7 +316,7 @@ const submit = () => {
   if (isFormValid.value) {
     emit('submit', {
       ...form.value,
-      type: props.formType,
+      type: internalFormType.value,
       id: props.editTransaction ? props.editTransaction.id : Date.now().toString()
     })
     close()
@@ -458,6 +534,78 @@ const close = () => {
   margin-top: 4px;
 }
 
+.nlp-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.nlp-btn {
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.nlp-btn.parse {
+  background: #f5f7ff;
+  border-color: #667eea;
+  color: #334;
+}
+
+.nlp-btn.apply {
+  background: #eefaf0;
+  border-color: #4caf50;
+  color: #264;
+}
+
+.nlp-btn.clear {
+  background: #fff5f5;
+  border-color: #f44336;
+  color: #622;
+}
+
+.nlp-btn.switch {
+  display: none;
+}
+
+.nlp-preview {
+  margin-top: 10px;
+  border: 1px dashed #e0e0e0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #333;
+  background: #fafafa;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.preview-label {
+  color: #666;
+}
+
+.preview-value {
+  font-weight: 600;
+}
+
+.preview-warnings {
+  margin-top: 6px;
+  color: #f44336;
+  font-size: 12px;
+}
+
+.stt-error {
+  font-size: 12px;
+  color: #f44336;
+  margin-top: 6px;
+}
 /* 表单底部 */
 .form-footer {
   display: flex;

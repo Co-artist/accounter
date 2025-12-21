@@ -1,7 +1,7 @@
 <template>
   <div class="home-page">
     <!-- 内容区域 -->
-    <div class="content-wrapper">
+    <div class="content-wrapper" ref="swipeEl">
       <!-- 余额概览 -->
       <BalanceOverview 
         :transactions="transactions"
@@ -39,22 +39,22 @@
       class="success-toast" 
       :class="{ show: successVisible }"
     >
-      ✅ 交易添加成功
+      ✅ {{ t('交易添加成功') }}
     </div>
     
     <!-- 收入/支出选择弹窗 -->
     <div class="type-select-modal" v-if="showTypeSelect">
       <div class="modal-content">
         <button class="modal-close" @click="closeTypeSelect">✕</button>
-        <h3 class="modal-title">选择记账类型</h3>
+        <h3 class="modal-title">{{ t('选择记账类型') }}</h3>
         <div class="modal-options">
           <button class="option-btn income" @click="selectIncome">
             <span class="option-icon">💰</span>
-            <span class="option-text">收入</span>
+            <span class="option-text">{{ t('收入') }}</span>
           </button>
           <button class="option-btn expense" @click="selectExpense">
             <span class="option-icon">💸</span>
-            <span class="option-text">支出</span>
+            <span class="option-text">{{ t('支出') }}</span>
           </button>
         </div>
       </div>
@@ -63,7 +63,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, inject, computed } from 'vue'
+defineOptions({ name: 'HomePage' })
+import { ref, onMounted, watch, inject, computed, onActivated, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
+import { attachSwipeNavigation } from '../utils/swipeNavigation'
 import BalanceOverview from '../components/BalanceOverview.vue'
 import TransactionList from '../components/TransactionList.vue'
 import BottomNavigation from '../components/BottomNavigation.vue'
@@ -71,6 +74,9 @@ import TransactionForm from '../components/TransactionForm.vue'
 
 // 注入store
 const store = inject('store')
+const t = inject('t')
+const router = useRouter()
+const swipeEl = ref(null)
 
 // 交易数据 - 从store获取
 const transactions = computed(() => store.state.transactions)
@@ -169,13 +175,22 @@ const handleNavigate = (itemId) => {
     showTypeSelectModal()
   }
 }
+
+onMounted(async () => {
+  await nextTick()
+  requestAnimationFrame(() => {
+    attachSwipeNavigation(swipeEl.value, 'home', router)
+  })
+})
+
+onActivated(() => {})
 </script>
 
 <style scoped>
 .home-page {
   width: 100%;
   height: 100%;
-  background: #f5f5f5;
+  background: var(--bg-body, #f5f5f5);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -186,6 +201,7 @@ const handleNavigate = (itemId) => {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding-top: 40px; /* 适配手机顶部 */
   padding-bottom: 60px; /* 为底部导航预留空间 */
 }
 
@@ -244,7 +260,7 @@ const handleNavigate = (itemId) => {
 }
 
 .modal-content {
-  background: white;
+  background: var(--bg-card, #fff);
   padding: 32px 24px;
   border-radius: 20px;
   width: 90%;
@@ -252,6 +268,7 @@ const handleNavigate = (itemId) => {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   position: relative;
   animation: slideUp 0.3s ease;
+  color: var(--text-primary, #333);
 }
 
 .modal-close {
@@ -262,7 +279,7 @@ const handleNavigate = (itemId) => {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #999;
+  color: var(--text-secondary, #999);
   padding: 4px;
   border-radius: 50%;
   transition: all 0.2s ease;
@@ -271,7 +288,7 @@ const handleNavigate = (itemId) => {
 
 .modal-close:active {
   background: rgba(0, 0, 0, 0.1);
-  color: #333;
+  color: var(--text-primary, #333);
   transform: scale(0.9);
 }
 
@@ -279,7 +296,7 @@ const handleNavigate = (itemId) => {
   text-align: center;
   font-size: 20px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary, #333);
   margin: 0 0 32px 0;
 }
 

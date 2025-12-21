@@ -1,6 +1,22 @@
 <template>
-  <PhoneShell :class="theme">
-    <router-view />
+  <div id="app-content" :class="theme">
+    <SplashScreen v-if="showSplash" @finish="handleSplashFinish" />
+    <OwlBackground />
+    <router-view v-slot="{ Component }">
+      <transition :name="transitionName">
+        <keep-alive include="HomePage,StatisticsPage,CategoryPage,ProfilePage">
+          <component :is="Component" />
+        </keep-alive>
+      </transition>
+    </router-view>
+    <UpdateModal
+      :visible="updateModal.visible"
+      :title="t('更新说明')"
+      :content="updateModal.note"
+      :version="updateModal.version"
+      @close="handleUpdateClose"
+      @neverShow="handleUpdateNeverShow"
+    />
     <ErrorMessage
       v-if="errorMessage.show"
       :type="errorMessage.type"
@@ -9,18 +25,37 @@
       :auto-close="errorMessage.autoClose"
       @close="clearError"
     />
-  </PhoneShell>
+  </div>
 </template>
 
 <script setup>
 import { ref, provide, onMounted, watch, computed, onErrorCaptured } from 'vue'
-import PhoneShell from './components/PhoneShell.vue'
+import { useRouter } from 'vue-router'
 import ErrorMessage from './components/ErrorMessage.vue'
+import UpdateModal from './components/UpdateModal.vue'
+import axios from './utils/axios'
+import OwlBackground from './components/OwlBackground.vue'
+import SplashScreen from './components/SplashScreen.vue'
 import { messages } from './i18n'
 import store from './store'
+import { navDirection } from './utils/navDirection'
+
+// 路由实例
+const router = useRouter()
 
 // 主题状态管理
 const theme = ref('light')
+
+// 开场动画状态
+const showSplash = ref(false)
+const enableSplash = ref(true)
+
+// 更新开场动画设置
+const updateSplashSetting = (enabled) => {
+  enableSplash.value = enabled
+  localStorage.setItem('app-enable-splash', enabled)
+}
+
 
 // 语言状态管理
 const language = ref('zh-CN')
@@ -79,6 +114,7 @@ onErrorCaptured((error, instance, info) => {
 const loadSettings = () => {
   const savedTheme = localStorage.getItem('app-theme')
   const savedLanguage = localStorage.getItem('app-language')
+  const savedEnableSplash = localStorage.getItem('app-enable-splash')
   
   if (savedTheme) {
     theme.value = savedTheme
@@ -89,6 +125,41 @@ const loadSettings = () => {
   
   if (savedLanguage) {
     language.value = savedLanguage
+  }
+
+  // 加载开场动画设置
+  if (savedEnableSplash !== null) {
+    enableSplash.value = savedEnableSplash === 'true'
+  } else {
+    enableSplash.value = true // 默认开启
+  }
+
+
+  // 如果开启了开场动画，则显示
+  if (enableSplash.value) {
+    showSplash.value = true
+  }
+}
+
+// 处理开场动画结束
+const handleSplashFinish = () => {
+  showSplash.value = false
+  
+  // 检查登录状态和自动登录设置
+  const token = localStorage.getItem('token')
+  const rememberMe = localStorage.getItem('rememberMe') === 'true'
+  
+  if (token && rememberMe) {
+    // 已登录且开启自动登录，留在首页
+    router.push('/')
+  } else {
+    // 未登录或未开启自动登录，跳转到登录页
+    // 如果存在token但没有rememberMe，清除token
+    if (token && !rememberMe) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    }
+    router.push('/login')
   }
 }
 
@@ -146,17 +217,27 @@ const t = (key, params = {}) => {
   
   // 替换占位符
   for (const [name, value] of Object.entries(params)) {
-    message = message.replace(new RegExp(`\{${name}\}`, 'g'), value)
+    message = message.replace(new RegExp('\\{' + name + '\\}', 'g'), value)
   }
   
   return message
 }
 
+// 切换动画名称
+const transitionName = computed(() => {
+  if (navDirection.value === 'left') return 'slide-left'
+  if (navDirection.value === 'right') return 'slide-right'
+  return 'fade'
+})
+
 // 提供全局状态
 provide('theme', theme)
 provide('language', language)
+provide('enableSplash', enableSplash)
 provide('updateTheme', updateTheme)
 provide('updateLanguage', updateLanguage)
+provide('updateSplashSetting', updateSplashSetting)
+provide('showSplash', showSplash)
 provide('t', t)
 // 提供数据存储
 provide('store', store)
@@ -166,12 +247,60 @@ onMounted(() => {
   loadSettings()
   updateTheme(theme.value)
   watchSystemTheme()
+  checkUpdateNote()
+  preloadTabs()
 })
 
 // 监听设置变化
 watch([theme, language], () => {
   saveSettings()
 })
+
+// 更新说明弹窗状态
+const updateModal = ref({
+  visible: false,
+  version: '',
+  note: ''
+})
+
+// 检查更新说明
+const checkUpdateNote = async () => {
+  try {
+    const resp = await axios.get('/updates/check')
+    const version = resp.version || ''
+    const note = resp.note || ''
+    const lastSeen = localStorage.getItem('lastSeenUpdateVersion')
+    if (version && version !== lastSeen) {
+      updateModal.value = { visible: true, version, note }
+    }
+  } catch (e) {
+    // 忽略网络错误
+    console.warn('Update note check failed:', e?.message || e)
+  }
+}
+
+// 预加载主 Tab 组件
+const preloadTabs = () => {
+  Promise.all([
+    import('./views/HomePage.vue'),
+    import('./views/StatisticsPage.vue'),
+    import('./views/CategoryPage.vue'),
+    import('./views/ProfilePage.vue')
+  ]).catch(() => {})
+}
+
+const handleUpdateClose = () => {
+  // 仅关闭，不记录（用户下次仍会看到）
+  updateModal.value.visible = false
+}
+
+const handleUpdateNeverShow = () => {
+  // 记录已阅读的版本，不再提示
+  if (updateModal.value.version) {
+    localStorage.setItem('lastSeenUpdateVersion', updateModal.value.version)
+  }
+  updateModal.value.visible = false
+}
 </script>
 
 <style>
@@ -187,33 +316,99 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #f5f5f5;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
   margin: 0;
-  padding: 20px;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   transition: background-color 0.3s ease;
+}
+
+/* 页面切换动画 */
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active,
+.fade-enter-active,
+.fade-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  will-change: transform, opacity;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.slide-left-enter-from {
+  transform: translateX(100%);
+  opacity: 0.6;
+}
+.slide-left-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+.slide-left-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+.slide-left-leave-to {
+  transform: translateX(-30%);
+  opacity: 0;
+}
+.slide-right-enter-from {
+  transform: translateX(-100%);
+  opacity: 0.6;
+}
+.slide-right-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+.slide-right-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+.slide-right-leave-to {
+  transform: translateX(30%);
+  opacity: 0;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
 }
 
 #app {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  height: 100%;
+}
+
+#app-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--background-primary);
+  contain: layout paint size;
 }
 
 /* 主题变量 */
 :root {
-  /* 默认亮色主题 */
-  --background-primary: #f5f5f5;
-  --background-secondary: #ffffff;
+  /* 默认亮色主题 (还原为紫色) */
+  --bg-body: #f5f5f5;
+  --bg-card: #ffffff;
+  --bg-input: #f5f5f5;
   --text-primary: #333333;
   --text-secondary: #666666;
   --text-tertiary: #999999;
   --border-color: #e0e0e0;
+  
+  /* 还原为紫色渐变 */
   --primary-color: #667eea;
   --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --text-on-primary: #ffffff; /* 适配紫色背景的白字 */
+  
   --income-color: #4caf50;
   --expense-color: #f44336;
   --balance-color: #2196f3;
@@ -223,14 +418,19 @@ body {
 
 /* 暗色主题 */
 [data-theme="dark"] {
-  --background-primary: #121212;
-  --background-secondary: #1e1e1e;
+  --bg-body: #121212;
+  --bg-card: #1E1E1E;
+  --bg-input: #2C2C2C;
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
   --text-tertiary: #707070;
   --border-color: #333333;
+  
+  /* 暗色模式下也使用紫色系但更深 */
   --primary-color: #8b94e9;
   --primary-gradient: linear-gradient(135deg, #8b94e9 0%, #a58ac8 100%);
+  --text-on-primary: #ffffff;
+  
   --income-color: #66bb6a;
   --expense-color: #ef5350;
   --balance-color: #42a5f5;
@@ -238,113 +438,33 @@ body {
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-/* 蓝色主题 */
-[data-theme="blue"] {
-  --background-primary: #f0f4f8;
-  --background-secondary: #ffffff;
-  --text-primary: #1a365d;
-  --text-secondary: #4a5568;
-  --text-tertiary: #718096;
-  --border-color: #e2e8f0;
-  --primary-color: #3182ce;
-  --primary-gradient: linear-gradient(135deg, #3182ce 0%, #2b6cb0 100%);
-  --income-color: #38a169;
-  --expense-color: #e53e3e;
-  --balance-color: #4299e1;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
+/* ...中间省略... */
 
-/* 绿色主题 */
-[data-theme="green"] {
-  --background-primary: #f0fdf4;
-  --background-secondary: #ffffff;
-  --text-primary: #166534;
-  --text-secondary: #3f6212;
-  --text-tertiary: #65a30d;
-  --border-color: #dcfce7;
-  --primary-color: #10b981;
-  --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --income-color: #22c55e;
-  --expense-color: #ef4444;
-  --balance-color: #14b8a6;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-
-/* 紫色主题 */
-[data-theme="purple"] {
-  --background-primary: #faf5ff;
-  --background-secondary: #ffffff;
-  --text-primary: #581c87;
-  --text-secondary: #7e22ce;
-  --text-tertiary: #9333ea;
-  --border-color: #f3e8ff;
-  --primary-color: #8b5cf6;
-  --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  --income-color: #22c55e;
-  --expense-color: #ef4444;
-  --balance-color: #8b5cf6;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-
-/* 橙色主题 */
-[data-theme="orange"] {
-  --background-primary: #fff7ed;
-  --background-secondary: #ffffff;
-  --text-primary: #9a3412;
-  --text-secondary: #d97706;
-  --text-tertiary: #f59e0b;
-  --border-color: #ffedd5;
-  --primary-color: #f97316;
-  --primary-gradient: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-  --income-color: #22c55e;
-  --expense-color: #ef4444;
-  --balance-color: #f59e0b;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-
-/* 猫头鹰主题 */
+/* 猫头鹰主题 (保留黄色) */
 [data-theme="owl"] {
-  /* 背景色：使用深蓝色渐变，确保按钮对比度 */
-  --background-primary: #1a1a2e;
-  --background-secondary: #16213e;
-  --background-tertiary: #0f3460;
-  
-  /* 文本色：确保高对比度 */
+  --bg-body: #1a1a2e;
+  --bg-card: #16213e;
+  --bg-input: #0f3460;
   --text-primary: #ffffff;
   --text-secondary: #b8c2cc;
   --text-tertiary: #6c757d;
+  --border-color: #2d3748;
   
-  /* 主色调：使用醒目的黄色，确保按钮突出 */
   --primary-color: #ffd700;
   --primary-gradient: linear-gradient(135deg, #ffd700 0%, #ffa726 100%);
-  --primary-hover: #ffc107;
-  --primary-active: #ffb300;
+  --text-on-primary: #5D4037; /* 适配黄色背景的深字 */
   
-  /* 功能色：确保功能明确 */
-  --income-color: #4caf50;
-  --expense-color: #f44336;
-  --balance-color: #2196f3;
-  
-  /* 边框和阴影：增强层次感 */
-  --border-color: #2d3748;
-  --border-light: #4a5568;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* 暗色主题下的body样式 */
-[data-theme="dark"] body {
-  background-color: #121212;
-  color: #ffffff;
+/* 基础样式适配 */
+body {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
 }
 
-/* 猫头鹰主题下的body样式 */
-[data-theme="owl"] body {
-  background-color: #1a1a2e;
-  color: #ffffff;
+#app-content {
+  background-color: var(--bg-body);
 }
 </style>

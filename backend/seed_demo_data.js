@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const path = require('path');
-const User = require('./database/models/User');
-const Transaction = require('./database/models/Transaction');
-const Category = require('./database/models/Category');
-const Budget = require('./database/models/Budget');
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import path from 'path';
+import User from './database/models/User.js';
+import Transaction from './database/models/Transaction.js';
+import Category from './database/models/Category.js';
+import Budget from './database/models/Budget.js';
 
 // Load env vars
 dotenv.config();
@@ -40,7 +40,8 @@ const seedData = async () => {
       console.log('Creating new demo user...');
       user = await User.create({
         username,
-        password
+        password,
+        avatar: 'owl-1'
       });
     }
 
